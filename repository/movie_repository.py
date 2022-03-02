@@ -1,8 +1,9 @@
 from typing import List
+from copy import deepcopy
 
 from exceptions.movie_not_found_exception import MovieNotFoundException
-from model.movie import Movie
 from repository.repository import Repository
+from model.movie import Movie
 
 
 class MovieRepository(Repository):
@@ -24,38 +25,27 @@ class MovieRepository(Repository):
         ),
     ]
 
-    def get_all(self) -> List[Movie]:
-        return self.movies
+    def create(self, movie: Movie) -> None:
+        self.movies.append(movie)
+
+    def get_all(self) -> List[Movie]:  # semnul '->' inseamna Return
+        return deepcopy(self.movies)
 
     def update(self, movie) -> None:
         for i, existing_movie in enumerate(self.movies):
             if movie.primary_title == existing_movie.primary_title:
                 self.movies[i] = movie
                 return
-        raise MovieNotFoundException(f'Nu am gasit filmul {movie.primary_title}')
+        raise MovieNotFoundException(f'Filmul nu a fost gasit {movie.primary_title}')
 
-    def delete(self, title: str):
+    def delete(self, title: str) -> Movie:
         for i, existing_movie in enumerate(self.movies):
             if title == existing_movie.primary_title:
                 return self.movies.pop(i)
-        raise MovieNotFoundException(f'Nu am gasit filmul {title}')
-
-    def create(self, movie: Movie) -> None:
-        return self.movies.append(movie)
+        raise MovieNotFoundException(f'Filmul nu a fost gasit {title}')
 
     def get_by_title(self, title):
         for movie in self.movies:
             if movie.primary_title == title:
                 return movie
         raise MovieNotFoundException(f'Nu ti-am gasit filmul {title}')
-
-
-repo = MovieRepository()
-try:
-    repo.get_by_title('Harry Potter 7')
-except MovieNotFoundException as ex:
-    print(ex)
-except (FileNotFoundError, FileExistsError):
-    print('Nu exista fisierul')
-except:
-    print('Alta eroare s-a intamplat')
